@@ -59,14 +59,14 @@ const SimpleStorage = () => {
     }
 
     try {
-      const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
+      const tempProvider = await new ethers.providers.Web3Provider(window.ethereum);
       setProvider(tempProvider);
 
-      const tempSigner = tempProvider.getSigner();
+      const tempSigner = await tempProvider.getSigner();
       setSigner(tempSigner);
 
-      const tempContract = new ethers.Contract(
-        contractAddress,
+      const tempContract = await new ethers.Contract(
+        contractAddress, //u can change this to contract since its a use state variable and its already set in SetHandler before this updateEthers func is called 
         SimpleStore_abi,
         tempSigner
       );
@@ -93,11 +93,20 @@ const SimpleStorage = () => {
 
   const setHandler = async (event) => {
     event.preventDefault();
+
+     // setting state variable `contract` to the value in input bar, 
+     //this is just the address represented as string at this point 
+    setContract(event.target.setText.value)
+
     if (contract) {
       try {
         console.log(
           'Sending ' + event.target.setText.value + ' to the contract'
         );
+
+        //create contract instance with the simplestor abi
+        updateEthers()
+
         await contract.set(event.target.setText.value);
         console.log('Transaction successful.');
       } catch (error) {
@@ -115,7 +124,7 @@ const SimpleStorage = () => {
       <div>
         <h3>Address: {defaultAccount}</h3>
       </div>
-      <form onSubmit={setHandler}>
+      <form onSubmit={(event) => setHandler(event)}>
         <input id='setText' type='text' />
         <button type={'submit'}> Update Contract </button>
       </form>
